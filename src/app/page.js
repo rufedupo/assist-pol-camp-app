@@ -3,6 +3,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
+import Swal from 'sweetalert2';
 
 export default function Home() {
   const [loading, setLoading] = useState(true); 
@@ -40,64 +41,88 @@ export default function Home() {
   
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const leaderName  = event.target.elements.leader.value;
+    if (!isSubmitting){
+      setIsSubmitting(true);
+      const leaderName  = event.target.elements.leader.value;
     
-    if (selectedLeader.name) {
-      const res = await fetch(`/api/leaders/${selectedLeader._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: leaderName }),
-      });
-
-      if (res.ok) {
-        setLeaders((prev) =>
-          prev.map((leader) =>
-            leader._id === selectedLeader._id
-              ? { ...leader, name: leaderName }
-              : leader
-          )
-        );
+      if (selectedLeader.name) {
+        const res = await fetch(`/api/leaders/${selectedLeader._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: leaderName }),
+        });
+  
+        if (res.ok) {
+          setLeaders((prev) =>
+            prev.map((leader) =>
+              leader._id === selectedLeader._id
+                ? { ...leader, name: leaderName }
+                : leader
+            )
+          );
+          Swal.fire('Editado!', 'A liderança foi editada com sucesso.', 'success');
+        } else {
+          Swal.fire('Erro!', 'Ocorreu um erro ao editar a liderança.', 'error');
+          console.error("Erro ao editar a liderança");
+        }
       } else {
-        console.error("Erro ao editar a liderança");
+        const res = await fetch("/api/leaders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: leaderName }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLeaders((prev) => [...prev, {
+            name: data.name,
+            totalVotes: 0
+          }]);
+          Swal.fire('Adicionado!', 'A liderança foi adicionada com sucesso.', 'success');
+        } else {
+          Swal.fire('Erro!', 'Ocorreu um erro adicionar a liderança.', 'error');
+          console.error("Erro ao adicionar a liderança");
+        }
       }
-    } else {
-      const res = await fetch("/api/leaders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: leaderName }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLeaders((prev) => [...prev, {
-          name: data.name,
-          totalVotes: 0
-        }]);
-      } else {
-        console.error("Erro ao adicionar nova liderança");
-      }
+      closeModal();
+      setIsSubmitting(false);
     }
-    closeModal();
-    setIsSubmitting(false);
   };
 
   const totalVotosGeral = leaders.reduce((total, leader) => total + leader.totalVotes, 0);
 
   const handleDelete = async (leaderId) => {
-    setLoading(true)
-    const res = await fetch(`/api/leaders/${leaderId}`, {
-      method: "DELETE",
+    const confirmation = await Swal.fire({
+      title: 'Tem certeza?',
+      text: "Essa ação não pode ser desfeita!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sim, excluir!',
+      cancelButtonText: 'Cancelar'
     });
   
-    if (res.ok) {
-      setLeaders((prev) => prev.filter((leader) => leader._id !== leaderId));
-    } else {
-      console.error("Erro ao excluir a liderança:", res.statusText);
+    if (confirmation.isConfirmed) {
+      setLoading(true);
+  
+      const res = await fetch(`/api/leaders/${leaderId}`, {
+        method: 'DELETE',
+      });
+  
+      if (res.ok) {
+        setLeaders((prev) => prev.filter((leader) => leader._id !== leaderId));
+        Swal.fire('Excluído!', 'A liderança foi excluída com sucesso.', 'success');
+      } else {
+        Swal.fire('Erro!', 'Ocorreu um erro ao excluir a liderança.', 'error');
+        console.error('Erro ao excluir a liderança:', res.statusText);
+      }
+  
+      setLoading(false);
     }
-    setLoading(false)
   };
 
   return (
@@ -176,10 +201,7 @@ export default function Home() {
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
               <h2>{selectedLeader.name ? "Editar Liderança" : "Adicionar Liderança"}</h2>
-              <form onSubmit={() => {
-                setIsSubmitting(true);
-                handleSubmit();
-              }}>
+              <form onSubmit={handleSubmit}>
                 <label htmlFor="indication">Nome da Liderança:</label>
                 <input
                   type="text"
@@ -189,7 +211,7 @@ export default function Home() {
                   required
                 />
                 <div className={styles.modalActions}>
-                  <button type="submit" className={styles.button} disabled={!isSubmitting}>
+                  <button type="submit" className={styles.button} disabled={isSubmitting}>
                     {selectedLeader.name ? "Atualizar" : "Enviar"}
                   </button>
                   <button

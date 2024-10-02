@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import styles from "./page.module.css";
 import PhoneInput from "../../components/PhoneInput";
 import ElectoralCardInput from "../../components/ElectoralCardInput";
+import Swal from 'sweetalert2';
 
 const IndicationPage = () => {
   const { id } = useParams();
@@ -96,71 +97,78 @@ const IndicationPage = () => {
   
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const newIndication = event.target.elements;
-    const indicationData = {
-      name: newIndication.name.value,
-      contact: newIndication.contact.value,
-      electoralCard: newIndication.electoralCard.value,
-      electoralZone: newIndication.electoralZone.value,
-      electoralSection: newIndication.electoralSection.value,
-      electoralLocation: newIndication.electoralLocation.value,
-      leaderId: id
-    }
-
-    if (selectedIndication.name) {
-      const res = await fetch(`/api/indications/${selectedIndication._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(indicationData),
-      });
-
-      if (res.ok) {
-        setIndications((prev) =>
-          prev.map((indication) =>
-            indication._id === selectedIndication._id
-              ? { 
-                ...indication, 
-                name: indicationData.name,
-                contact: indicationData.contact,
-                electoralCard: indicationData.electoralCard,
-                electoralZone: indicationData.electoralZone,
-                electoralSection: indicationData.electoralSection,
-                electoralLocation: indicationData.electoralLocation
-              }
-              : indication
-          )
-        );
-      } else {
-        console.error("Erro ao editar a liderança");
+    if (!isSubmitting) {
+      setIsSubmitting(true);
+      const newIndication = event.target.elements;
+      const indicationData = {
+        name: newIndication.name.value,
+        contact: newIndication.contact.value,
+        electoralCard: newIndication.electoralCard.value,
+        electoralZone: newIndication.electoralZone.value,
+        electoralSection: newIndication.electoralSection.value,
+        electoralLocation: newIndication.electoralLocation.value,
+        leaderId: id
       }
-    } else {
-      const res = await fetch("/api/indications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(indicationData),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setIndications((prev) => [...prev, {
-          name: data.name,
-          contact: data.contact,
-          electoralCard: data.electoralCard,
-          electoralZone: data.electoralZone,
-          electoralSection: data.electoralSection,
-          electoralLocation: data.electoralLocation
-        }]);
-        setTotalVotes(totalVotes + 1)
-        inputClear()
+  
+      if (selectedIndication.name) {
+        const res = await fetch(`/api/indications/${selectedIndication._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(indicationData),
+        });
+  
+        if (res.ok) {
+          setIndications((prev) =>
+            prev.map((indication) =>
+              indication._id === selectedIndication._id
+                ? { 
+                  ...indication, 
+                  name: indicationData.name,
+                  contact: indicationData.contact,
+                  electoralCard: indicationData.electoralCard,
+                  electoralZone: indicationData.electoralZone,
+                  electoralSection: indicationData.electoralSection,
+                  electoralLocation: indicationData.electoralLocation
+                }
+                : indication
+            )
+          );
+          Swal.fire('Editado!', 'A indicação foi editada com sucesso.', 'success');
+        } else {
+          Swal.fire('Erro!', 'Ocorreu um erro ao editar a indicação.', 'error');
+          console.error("Erro ao editar a indicação");
+        }
       } else {
-        console.error("Erro ao adicionar nova indicação");
+        const res = await fetch("/api/indications", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(indicationData),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setIndications((prev) => [...prev, {
+            name: data.name,
+            contact: data.contact,
+            electoralCard: data.electoralCard,
+            electoralZone: data.electoralZone,
+            electoralSection: data.electoralSection,
+            electoralLocation: data.electoralLocation
+          }]);
+          setTotalVotes(totalVotes + 1)
+          inputClear()
+          Swal.fire('Adicionado!', 'A indicação foi adicionada com sucesso.', 'success');
+        } else {
+          Swal.fire('Erro!', 'Ocorreu um erro ao adicionar a indicação.', 'error');
+          console.error("Erro ao adicionar a indicação");
+        }
       }
+      closeModal();
+      setIsSubmitting(false);
     }
-    closeModal();
-    setIsSubmitting(false);
   };
 
   const handleBack = () => {
@@ -168,18 +176,35 @@ const IndicationPage = () => {
   };
 
   const handleDelete = async (indicationId) => {
-    setLoading(true)
-    const res = await fetch(`/api/indications/${indicationId}`, {
-      method: "DELETE",
+    const confirmation = await Swal.fire({
+      title: 'Tem certeza?',
+      text: "Essa ação não pode ser desfeita!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sim, excluir!',
+      cancelButtonText: 'Cancelar'
     });
   
-    if (res.ok) {
-      setIndications((prev) => prev.filter((indication) => indication._id !== indicationId));
-      setTotalVotes(totalVotes - 1)
-    } else {
-      console.error("Erro ao excluir a indicação:", res.statusText);
+    if (confirmation.isConfirmed) {
+      setLoading(true);
+      
+      const res = await fetch(`/api/indications/${indicationId}`, {
+        method: 'DELETE',
+      });
+  
+      if (res.ok) {
+        setIndications((prev) => prev.filter((indication) => indication._id !== indicationId));
+        setTotalVotes(totalVotes - 1);
+        Swal.fire('Excluído!', 'A indicação foi excluída com sucesso.', 'success');
+      } else {
+        Swal.fire('Erro!', 'Ocorreu um erro ao excluir a indicação.', 'error');
+        console.error('Erro ao excluir a indicação:', res.statusText);
+      }
+  
+      setLoading(false);
     }
-    setLoading(false)
   };
 
   const inputClear = () => {
@@ -198,9 +223,9 @@ const IndicationPage = () => {
   const formatPhone = (phone) => {
     const cleaned = phone?.replace(/\D/g, "");
   
-    if (cleaned.length === 11) {
+    if (cleaned?.length === 11) {
       return cleaned.replace(/^(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2 $3-$4");
-    } else if (cleaned.length === 10) {
+    } else if (cleaned?.length === 10) {
       return cleaned.replace(/^(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
     }
     
@@ -239,7 +264,7 @@ const IndicationPage = () => {
                   <tr>
                     <th>Indicação</th>
                     <th style={{textAlign: 'left'}}>Contato</th>
-                    <th style={{textAlign: 'left'}}>Número do Título</th>
+                    <th style={{textAlign: 'center'}}>Número do Título</th>
                     <th style={{textAlign: 'right'}}>Zona</th>
                     <th style={{textAlign: 'right'}}>Seção</th>
                     <th>Local de Votação</th>
@@ -251,7 +276,7 @@ const IndicationPage = () => {
                     <tr key={indication._id}>
                       <td>{indication.name}</td>
                       <td style={{textAlign: 'left'}}>{formatPhone(indication.contact)}</td>
-                      <td style={{textAlign: 'left'}}>{formatElectoralCard(indication.electoralCard)}</td>
+                      <td style={{textAlign: 'center'}}>{formatElectoralCard(indication.electoralCard)}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralZone}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralSection}</td>
                       <td>{indication.electoralLocation}</td>
@@ -333,7 +358,7 @@ const IndicationPage = () => {
                   <button
                     type="submit"
                     className={styles.button}
-                    disabled={!isFormValid && !isSubmitting} // Desabilita o botão se o formulário não for válido
+                    disabled={!isFormValid && isSubmitting} // Desabilita o botão se o formulário não for válido
                   >
                     {selectedIndication.name ? "Atualizar" : "Enviar"}
                   </button>
