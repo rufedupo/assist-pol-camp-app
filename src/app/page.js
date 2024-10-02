@@ -120,11 +120,14 @@ export default function Home() {
           {leaders.length > 0 && 
             <> 
               <h4>Total de Votos Geral: {totalVotosGeral}</h4>
+              <h5>Total: {((totalVotosGeral*50)+((totalVotosGeral-leaders.filter((leader) => leader.totalVotes > 0).length)*10))}</h5>
               <table className={styles.table}>
                 <thead>
                   <tr>
                     <th>Liderança</th>
                     <th style={{textAlign: 'center'}}>Total de Votos</th>
+                    <th style={{textAlign: 'center'}}>Total Liderança</th>
+                    <th style={{textAlign: 'center'}}>Total</th>
                     <th style={{textAlign: 'center'}}>Ação</th>
                   </tr>
                 </thead>
@@ -137,6 +140,8 @@ export default function Home() {
                         </Link>
                       </td>
                       <td style={{textAlign: 'center'}}>{leader.totalVotes}</td>
+                      <td style={{textAlign: 'center'}}>{leader.totalVotes > 0 ? (50+((leader.totalVotes-1)*10)) : 0}</td>
+                      <td style={{textAlign: 'center'}}>{leader.totalVotes > 0 ? ((leader.totalVotes*50)+((leader.totalVotes-1)*10)) : 0}</td>
                       <td style={{textAlign: 'center'}}>
                         <button
                           onClick={() => openModal(leader)} // Abre modal com o líder a ser editado
