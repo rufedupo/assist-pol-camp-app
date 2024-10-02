@@ -6,8 +6,8 @@ const PhoneInput = ({ id, name, contact, required, setContact }) => {
   const handleChange = (e) => {
     const inputValue = e.target.value
       .replace(/\D/g, "") // Remove todos os caracteres não numéricos
-      .replace(/^(\d{2})(\d)/, "($1) $2") // Adiciona parênteses
-      .replace(/(\d{5})(\d)/, "$1-$2"); // Adiciona o hífen
+      .replace(/^(\d{2})(\d)/, "($1) $2 ") // Adiciona parênteses
+      .replace(/(\d{4})(\d)/, "$1-$2"); // Adiciona o hífen
     setValue(inputValue);
     setContact(inputValue);
   };  
@@ -22,7 +22,7 @@ const PhoneInput = ({ id, name, contact, required, setContact }) => {
         value={value}
         onChange={handleChange}
         required={required}
-        maxLength={15} 
+        maxLength={16} 
       />
     </>
   );

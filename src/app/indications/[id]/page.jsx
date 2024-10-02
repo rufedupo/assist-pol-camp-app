@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import styles from "./page.module.css";
 import PhoneInput from "../../components/PhoneInput";
+import ElectoralCardInput from "../../components/ElectoralCardInput";
 
 const IndicationPage = () => {
   const { id } = useParams();
@@ -187,6 +188,14 @@ const IndicationPage = () => {
     setElectoralLocation('');
   }
 
+  const formatElectoralCard = (card) => {
+    return card?.replace(/\D/g, '').replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
+  };
+
+  const formatPhone = (phone) => {
+    return phone?.replace(/\D/g, "").replace(/^(\d{2})(\d)/, "($1) $2 ").replace(/(\d{4})(\d)/, "$1-$2");
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -218,24 +227,24 @@ const IndicationPage = () => {
                 <thead>
                   <tr>
                     <th>Indicação</th>
-                    <th>Contato</th>
-                    <th>Número do Título</th>
-                    <th>Zona</th>
-                    <th>Seção</th>
+                    <th style={{textAlign: 'center'}}>Contato</th>
+                    <th style={{textAlign: 'right'}}>Número do Título</th>
+                    <th style={{textAlign: 'right'}}>Zona</th>
+                    <th style={{textAlign: 'right'}}>Seção</th>
                     <th>Local de Votação</th>
-                    <th>Ação</th>
+                    <th style={{textAlign: 'center'}}>Ação</th>
                   </tr>
                 </thead>
                 <tbody>
                   {indications.map((indication) => (
                     <tr key={indication._id}>
                       <td>{indication.name}</td>
-                      <td>{indication.contact}</td>
-                      <td>{indication.electoralCard}</td>
-                      <td>{indication.electoralZone}</td>
-                      <td>{indication.electoralSection}</td>
+                      <td style={{textAlign: 'center'}}>{formatPhone(indication.contact)}</td>
+                      <td style={{textAlign: 'right'}}>{formatElectoralCard(indication.electoralCard)}</td>
+                      <td style={{textAlign: 'right'}}>{indication.electoralZone}</td>
+                      <td style={{textAlign: 'right'}}>{indication.electoralSection}</td>
                       <td>{indication.electoralLocation}</td>
-                      <td>
+                      <td style={{textAlign: 'center'}}>
                         <button
                           onClick={() => openModal(indication)} // Abre modal com o líder a ser editado
                           className={styles.buttonEdit}
@@ -277,16 +286,8 @@ const IndicationPage = () => {
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
-                <PhoneInput id="contact" name="contact" contact={contact} setContact={setContact} required />
-                <label htmlFor="electoralCard">Número do Título:</label>
-                <input
-                  type="number"
-                  id="electoralCard"
-                  name="electoralCard"
-                  value={electoralCard}
-                  onChange={(e) => setElectoralCard(e.target.value)}
-                  required
-                />
+                <PhoneInput id="contact" name="contact" contact={formatPhone(contact)} setContact={setContact} required />
+                <ElectoralCardInput id="electoralCard" name="electoralCard" electoralCard={formatElectoralCard(electoralCard)} setElectoralCard={setElectoralCard} required />
                 <label htmlFor="electoralZone">Zona:</label>
                 <input
                   type="number"

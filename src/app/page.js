@@ -124,8 +124,8 @@ export default function Home() {
                 <thead>
                   <tr>
                     <th>Liderança</th>
-                    <th>Total de Votos</th>
-                    <th>Ação</th>
+                    <th style={{textAlign: 'center'}}>Total de Votos</th>
+                    <th style={{textAlign: 'center'}}>Ação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -136,8 +136,8 @@ export default function Home() {
                           <u>{leader.name}</u>
                         </Link>
                       </td>
-                      <td>{leader.totalVotes}</td>
-                      <td>
+                      <td style={{textAlign: 'center'}}>{leader.totalVotes}</td>
+                      <td style={{textAlign: 'center'}}>
                         <button
                           onClick={() => openModal(leader)} // Abre modal com o líder a ser editado
                           className={styles.buttonEdit}
