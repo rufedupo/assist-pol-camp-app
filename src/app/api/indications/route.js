@@ -10,7 +10,7 @@ export async function GET(req) {
   const indications = await Indication.find({ 
     leaderId,
     name: { $regex: searchQuery, $options: "i" }
-  });
+  }).sort({ name: 1 });
   return new Response(JSON.stringify(indications), { status: 200 });
 }
 

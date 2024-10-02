@@ -228,7 +228,7 @@ const IndicationPage = () => {
                   <tr>
                     <th>Indicação</th>
                     <th style={{textAlign: 'center'}}>Contato</th>
-                    <th style={{textAlign: 'right'}}>Número do Título</th>
+                    <th style={{textAlign: 'center'}}>Número do Título</th>
                     <th style={{textAlign: 'right'}}>Zona</th>
                     <th style={{textAlign: 'right'}}>Seção</th>
                     <th>Local de Votação</th>
@@ -240,7 +240,7 @@ const IndicationPage = () => {
                     <tr key={indication._id}>
                       <td>{indication.name}</td>
                       <td style={{textAlign: 'center'}}>{formatPhone(indication.contact)}</td>
-                      <td style={{textAlign: 'right'}}>{formatElectoralCard(indication.electoralCard)}</td>
+                      <td style={{textAlign: 'center'}}>{formatElectoralCard(indication.electoralCard)}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralZone}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralSection}</td>
                       <td>{indication.electoralLocation}</td>

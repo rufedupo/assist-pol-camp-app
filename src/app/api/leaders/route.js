@@ -31,6 +31,9 @@ export async function GET(req) {
           totalVotes: 1, // Inclui o total de votos
         },
       },
+      {
+        $sort: { name: 1 } 
+      }
     ]);
     return new Response(JSON.stringify(leaderList), { status: 200 });
   } catch (error) {
