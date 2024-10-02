@@ -19,7 +19,10 @@ async function dbConnect() {
 
   if (!cached.promise) {
     const opts = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
@@ -30,7 +33,7 @@ async function dbConnect() {
       throw err;
     });
   }
-  
+
   try {
     cached.conn = await cached.promise;
   } catch (error) {
