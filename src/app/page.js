@@ -10,6 +10,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchLeaders = async (query = "") => {
     const res = await fetch(`/api/leaders?name=${query}`);
@@ -80,6 +81,7 @@ export default function Home() {
       }
     }
     closeModal();
+    setIsSubmitting(false);
   };
 
   const totalVotosGeral = leaders.reduce((total, leader) => total + leader.totalVotes, 0);
@@ -174,7 +176,10 @@ export default function Home() {
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
               <h2>{selectedLeader.name ? "Editar Liderança" : "Adicionar Liderança"}</h2>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={() => {
+                setIsSubmitting(true);
+                handleSubmit();
+              }}>
                 <label htmlFor="indication">Nome da Liderança:</label>
                 <input
                   type="text"
@@ -184,7 +189,7 @@ export default function Home() {
                   required
                 />
                 <div className={styles.modalActions}>
-                  <button type="submit" className={styles.button}>
+                  <button type="submit" className={styles.button} disabled={!isSubmitting}>
                     {selectedLeader.name ? "Atualizar" : "Enviar"}
                   </button>
                   <button

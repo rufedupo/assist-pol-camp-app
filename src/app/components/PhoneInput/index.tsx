@@ -4,13 +4,19 @@ const PhoneInput = ({ id, name, contact, required, setContact }) => {
   const [value, setValue] = useState(contact);
 
   const handleChange = (e) => {
-    const inputValue = e.target.value
-      .replace(/\D/g, "") // Remove todos os caracteres não numéricos
-      .replace(/^(\d{2})(\d)/, "($1) $2 ") // Adiciona parênteses
-      .replace(/(\d{4})(\d)/, "$1-$2"); // Adiciona o hífen
+    let inputValue = e.target.value.replace(/\D/g, ""); // Remove todos os caracteres não numéricos
+  
+    if (inputValue.length > 10) {
+      inputValue = inputValue
+        .replace(/^(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2 $3-$4");
+    } else if (inputValue.length <= 10) {
+      inputValue = inputValue
+        .replace(/^(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    }
+  
     setValue(inputValue);
     setContact(inputValue);
-  };  
+  };
 
   return (
     <>

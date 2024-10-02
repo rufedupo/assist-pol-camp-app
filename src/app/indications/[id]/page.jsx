@@ -24,6 +24,8 @@ const IndicationPage = () => {
 
   const [selectedIndication, setSelectedIndication] = useState(null);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const isFormValid = 
     name && 
     contact && 
@@ -158,6 +160,7 @@ const IndicationPage = () => {
       }
     }
     closeModal();
+    setIsSubmitting(false);
   };
 
   const handleBack = () => {
@@ -193,7 +196,15 @@ const IndicationPage = () => {
   };
 
   const formatPhone = (phone) => {
-    return phone?.replace(/\D/g, "").replace(/^(\d{2})(\d)/, "($1) $2 ").replace(/(\d{4})(\d)/, "$1-$2");
+    const cleaned = phone?.replace(/\D/g, "");
+  
+    if (cleaned.length === 11) {
+      return cleaned.replace(/^(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2 $3-$4");
+    } else if (cleaned.length === 10) {
+      return cleaned.replace(/^(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
+    }
+    
+    return phone;
   };
 
   return (
@@ -227,7 +238,7 @@ const IndicationPage = () => {
                 <thead>
                   <tr>
                     <th>Indicação</th>
-                    <th style={{textAlign: 'center'}}>Contato</th>
+                    <th style={{textAlign: 'left'}}>Contato</th>
                     <th style={{textAlign: 'center'}}>Número do Título</th>
                     <th style={{textAlign: 'right'}}>Zona</th>
                     <th style={{textAlign: 'right'}}>Seção</th>
@@ -239,7 +250,7 @@ const IndicationPage = () => {
                   {indications.map((indication) => (
                     <tr key={indication._id}>
                       <td>{indication.name}</td>
-                      <td style={{textAlign: 'center'}}>{formatPhone(indication.contact)}</td>
+                      <td style={{textAlign: 'left'}}>{formatPhone(indication.contact)}</td>
                       <td style={{textAlign: 'center'}}>{formatElectoralCard(indication.electoralCard)}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralZone}</td>
                       <td style={{textAlign: 'right'}}>{indication.electoralSection}</td>
@@ -276,7 +287,10 @@ const IndicationPage = () => {
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
               <h2>{selectedIndication.name ? "Editar Liderança" : "Adicionar Liderança"}</h2>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={() => {
+                setIsSubmitting(true);
+                handleSubmit();
+              }}>
                 <label htmlFor="name">Nome:</label>
                 <input
                   type="text"
@@ -319,7 +333,7 @@ const IndicationPage = () => {
                   <button
                     type="submit"
                     className={styles.button}
-                    disabled={!isFormValid} // Desabilita o botão se o formulário não for válido
+                    disabled={!isFormValid && !isSubmitting} // Desabilita o botão se o formulário não for válido
                   >
                     {selectedIndication.name ? "Atualizar" : "Enviar"}
                   </button>
