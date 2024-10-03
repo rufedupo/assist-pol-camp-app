@@ -279,7 +279,6 @@ export default function Home() {
                         </Link>
                       </td>
                       <td style={{textAlign: 'center'}}>{leader.totalVotes}</td>
-                      <td style={{textAlign: 'center'}}>{leader.totalLeader}</td>
                       <td style={{textAlign: 'center'}}>{leader.total}</td>
                       <td style={{textAlign: 'center'}}>
                         <button
