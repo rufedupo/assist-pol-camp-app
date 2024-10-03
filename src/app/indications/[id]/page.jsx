@@ -49,7 +49,6 @@ const IndicationPage = () => {
       } else {
         console.error("Erro ao buscar indicações:", res.statusText);
       }
-      setLoading(false);
     }
   };
 
@@ -63,18 +62,32 @@ const IndicationPage = () => {
       } else {
         console.error("Erro ao buscar liderança:", res.statusText);
       }
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLeader();
-    fetchIndications();
+    Swal.fire({
+      title: 'Carregando informações...',
+      text: 'Por favor, aguarde.',
+      allowOutsideClick: loading,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    Promise.all([fetchLeader(), fetchIndications()])
+    .then(() => {
+      Swal.close();
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error('Erro ao carregar informações:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Falha ao carregar as informações.'
+      });
+    });
   }, [id]);
-
-  if (loading) {
-    return <div>Loading...</div>; // Exibe uma mensagem de carregamento
-  }
 
   const openModal = (indication = null) => {
     setSelectedIndication(indication);
@@ -111,6 +124,14 @@ const IndicationPage = () => {
       }
   
       if (selectedIndication.name) {
+        Swal.fire({
+          title: 'Editando...',
+          text: 'Por favor, aguarde.',
+          allowOutsideClick: loading,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         const res = await fetch(`/api/indications/${selectedIndication._id}`, {
           method: "PUT",
           headers: {
@@ -135,12 +156,22 @@ const IndicationPage = () => {
                 : indication
             )
           );
+          Swal.close();
           Swal.fire('Editado!', 'A indicação foi editada com sucesso.', 'success');
         } else {
+          Swal.close();
           Swal.fire('Erro!', 'Ocorreu um erro ao editar a indicação.', 'error');
           console.error("Erro ao editar a indicação");
         }
       } else {
+        Swal.fire({
+          title: 'Adicionando...',
+          text: 'Por favor, aguarde.',
+          allowOutsideClick: loading,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         const res = await fetch("/api/indications", {
           method: "POST",
           headers: {
@@ -151,6 +182,7 @@ const IndicationPage = () => {
         if (res.ok) {
           const data = await res.json();
           setIndications((prev) => [...prev, {
+            _id: data._id,
             name: data.name,
             contact: data.contact,
             electoralCard: data.electoralCard,
@@ -160,8 +192,10 @@ const IndicationPage = () => {
           }]);
           setTotalVotes(totalVotes + 1)
           inputClear()
+          Swal.close();
           Swal.fire('Adicionado!', 'A indicação foi adicionada com sucesso.', 'success');
         } else {
+          Swal.close();
           Swal.fire('Erro!', 'Ocorreu um erro ao adicionar a indicação.', 'error');
           console.error("Erro ao adicionar a indicação");
         }
@@ -235,7 +269,7 @@ const IndicationPage = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-      <div>
+      {!loading && <div>
         <button onClick={handleBack} className={styles.button}> {/* Botão de voltar */}
           Voltar
         </button>
@@ -307,15 +341,12 @@ const IndicationPage = () => {
             </>
           }
           <br/>
-        </div>
+        </div>}
         {isModalOpen && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
               <h2>{selectedIndication.name ? "Editar Liderança" : "Adicionar Liderança"}</h2>
-              <form onSubmit={() => {
-                setIsSubmitting(true);
-                handleSubmit();
-              }}>
+              <form onSubmit={handleSubmit}>
                 <label htmlFor="name">Nome:</label>
                 <input
                   type="text"

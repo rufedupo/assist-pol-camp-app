@@ -17,11 +17,30 @@ export default function Home() {
     const res = await fetch(`/api/leaders?name=${query}`);
     const data = await res.json();
     setLeaders(data);
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchLeaders();
+    Swal.fire({
+      title: 'Carregando informações...',
+      text: 'Por favor, aguarde.',
+      allowOutsideClick: loading,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    Promise.all([fetchLeaders()])
+    .then(() => {
+      Swal.close();
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error('Erro ao carregar informações:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Falha ao carregar as informações.'
+      });
+    });
   }, []);
 
   const handleSearch = (e) => {
@@ -46,6 +65,14 @@ export default function Home() {
       const leaderName  = event.target.elements.leader.value;
     
       if (selectedLeader.name) {
+        Swal.fire({
+          title: 'Editando...',
+          text: 'Por favor, aguarde.',
+          allowOutsideClick: loading,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         const res = await fetch(`/api/leaders/${selectedLeader._id}`, {
           method: "PUT",
           headers: {
@@ -62,12 +89,22 @@ export default function Home() {
                 : leader
             )
           );
+          Swal.close();
           Swal.fire('Editado!', 'A liderança foi editada com sucesso.', 'success');
         } else {
+          Swal.close();
           Swal.fire('Erro!', 'Ocorreu um erro ao editar a liderança.', 'error');
           console.error("Erro ao editar a liderança");
         }
       } else {
+        Swal.fire({
+          title: 'Adicionando...',
+          text: 'Por favor, aguarde.',
+          allowOutsideClick: loading,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
         const res = await fetch("/api/leaders", {
           method: "POST",
           headers: {
@@ -78,11 +115,14 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           setLeaders((prev) => [...prev, {
+            _id: data._id,
             name: data.name,
             totalVotes: 0
           }]);
+          Swal.close();
           Swal.fire('Adicionado!', 'A liderança foi adicionada com sucesso.', 'success');
         } else {
+          Swal.close();
           Swal.fire('Erro!', 'Ocorreu um erro adicionar a liderança.', 'error');
           console.error("Erro ao adicionar a liderança");
         }
@@ -107,28 +147,35 @@ export default function Home() {
     });
   
     if (confirmation.isConfirmed) {
-      setLoading(true);
+      Swal.fire({
+        title: 'Excluindo...',
+        text: 'Por favor, aguarde.',
+        allowOutsideClick: loading,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
   
       const res = await fetch(`/api/leaders/${leaderId}`, {
         method: 'DELETE',
       });
   
       if (res.ok) {
+        Swal.close();
         setLeaders((prev) => prev.filter((leader) => leader._id !== leaderId));
         Swal.fire('Excluído!', 'A liderança foi excluída com sucesso.', 'success');
       } else {
+        Swal.close();
         Swal.fire('Erro!', 'Ocorreu um erro ao excluir a liderança.', 'error');
         console.error('Erro ao excluir a liderança:', res.statusText);
       }
-  
-      setLoading(false);
     }
   };
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-      <div>
+        {!loading && <div>
           <h2>Lista de Liderança</h2>  
 
           <input
@@ -196,7 +243,7 @@ export default function Home() {
             </>
           }
           <br/>
-        </div>
+        </div>}
         {isModalOpen && (
           <div className={styles.modalOverlay}>
             <div className={styles.modal}>
