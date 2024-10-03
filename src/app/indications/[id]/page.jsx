@@ -318,7 +318,6 @@ const IndicationPage = () => {
             <> 
               <div style={{display: 'flex', gap: '10px'}}>
                 <h4>Total de Votos Geral: {totalVotes}</h4>
-                <h4>Total para Liderança: {totalLeader}</h4>
                 <h4>Total para Geral: {total}</h4>
               </div>
               <table className={styles.table}>

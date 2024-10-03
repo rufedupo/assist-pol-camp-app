@@ -265,9 +265,6 @@ export default function Home() {
                       Total de Votos <span onClick={() => requestSort('totalVotes')} style={{cursor: 'pointer'}}>{sortConfig.key === 'totalVotes' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
                     </th>
                     <th style={{textAlign: 'center'}}>
-                      Total Liderança  <span onClick={() => requestSort('totalLeader')} style={{cursor: 'pointer'}}>{sortConfig.key === 'totalLeader' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
-                    </th>
-                    <th style={{textAlign: 'center'}}>
                       Total <span onClick={() => requestSort('total')} style={{cursor: 'pointer'}}>{sortConfig.key === 'total' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
                     </th>
                     <th style={{textAlign: 'center'}}>Ação</th>
