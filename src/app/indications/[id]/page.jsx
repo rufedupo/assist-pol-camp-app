@@ -155,6 +155,7 @@ const IndicationPage = () => {
                 }
                 : indication
             )
+            .sort((a, b) => a.name.localeCompare(b.name))
           );
           Swal.close();
           Swal.fire('Editado!', 'A indicação foi editada com sucesso.', 'success');
@@ -181,15 +182,18 @@ const IndicationPage = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          setIndications((prev) => [...prev, {
-            _id: data._id,
-            name: data.name,
-            contact: data.contact,
-            electoralCard: data.electoralCard,
-            electoralZone: data.electoralZone,
-            electoralSection: data.electoralSection,
-            electoralLocation: data.electoralLocation
-          }]);
+          setIndications((prev) => 
+            [...prev, {
+              _id: data._id,
+              name: data.name,
+              contact: data.contact,
+              electoralCard: data.electoralCard,
+              electoralZone: data.electoralZone,
+              electoralSection: data.electoralSection,
+              electoralLocation: data.electoralLocation
+            }]
+            .sort((a, b) => a.name.localeCompare(b.name))
+          );
           setTotalVotes(totalVotes + 1)
           inputClear()
           Swal.close();
@@ -229,7 +233,11 @@ const IndicationPage = () => {
       });
   
       if (res.ok) {
-        setIndications((prev) => prev.filter((indication) => indication._id !== indicationId));
+        setIndications((prev) => setIndications((prev) => 
+          prev
+            .filter((indication) => indication._id !== indicationId)
+            .sort((a, b) => a.name.localeCompare(b.name))
+        ));
         setTotalVotes(totalVotes - 1);
         Swal.fire('Excluído!', 'A indicação foi excluída com sucesso.', 'success');
       } else {

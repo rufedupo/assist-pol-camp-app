@@ -88,6 +88,7 @@ export default function Home() {
                 ? { ...leader, name: leaderName }
                 : leader
             )
+            .sort((a, b) => a.name.localeCompare(b.name))
           );
           Swal.close();
           Swal.fire('Editado!', 'A liderança foi editada com sucesso.', 'success');
@@ -114,11 +115,14 @@ export default function Home() {
         });
         if (res.ok) {
           const data = await res.json();
-          setLeaders((prev) => [...prev, {
-            _id: data._id,
-            name: data.name,
-            totalVotes: 0
-          }]);
+          setLeaders((prev) => 
+            [...prev, {
+              _id: data._id,
+              name: data.name,
+              totalVotes: 0
+            }]
+            .sort((a, b) => a.name.localeCompare(b.name))
+          );
           Swal.close();
           Swal.fire('Adicionado!', 'A liderança foi adicionada com sucesso.', 'success');
         } else {
@@ -162,7 +166,11 @@ export default function Home() {
   
       if (res.ok) {
         Swal.close();
-        setLeaders((prev) => prev.filter((leader) => leader._id !== leaderId));
+        setLeaders((prev) => 
+          prev
+            .filter((leader) => leader._id !== leaderId) 
+            .sort((a, b) => a.name.localeCompare(b.name))
+        );
         Swal.fire('Excluído!', 'A liderança foi excluída com sucesso.', 'success');
       } else {
         Swal.close();
