@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import styles from "./page.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Swal from 'sweetalert2';
 
 export default function Home() {
@@ -12,11 +12,22 @@ export default function Home() {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ 
+    key: 'name', 
+    direction: 'ascending'
+  });
 
   const fetchLeaders = async (query = "") => {
     const res = await fetch(`/api/leaders?name=${query}`);
     const data = await res.json();
-    setLeaders(data);
+    const leaders = data.map((l) => {
+      return {
+        ...l,
+        totalLeader: l.totalVotes > 0 ? (50+((l.totalVotes-1)*10)) : 0,
+        total: l.totalVotes > 0 ? ((l.totalVotes*50)+((l.totalVotes-1)*10)) : 0
+      }
+    })
+    setLeaders(leaders);
   };
 
   useEffect(() => {
@@ -90,6 +101,10 @@ export default function Home() {
             )
             .sort((a, b) => a.name.localeCompare(b.name))
           );
+          setSortConfig({ 
+            direction: 'ascending', 
+            key: 'name' 
+          });
           Swal.close();
           Swal.fire('Editado!', 'A liderança foi editada com sucesso.', 'success');
         } else {
@@ -123,6 +138,10 @@ export default function Home() {
             }]
             .sort((a, b) => a.name.localeCompare(b.name))
           );
+          setSortConfig({ 
+            direction: 'ascending', 
+            key: 'name'
+          });
           Swal.close();
           Swal.fire('Adicionado!', 'A liderança foi adicionada com sucesso.', 'success');
         } else {
@@ -137,6 +156,7 @@ export default function Home() {
   };
 
   const totalVotosGeral = leaders.reduce((total, leader) => total + leader.totalVotes, 0);
+  const totalGeral = leaders.reduce((total, leader) => total + leader.total, 0);
 
   const handleDelete = async (leaderId) => {
     const confirmation = await Swal.fire({
@@ -171,6 +191,10 @@ export default function Home() {
             .filter((leader) => leader._id !== leaderId) 
             .sort((a, b) => a.name.localeCompare(b.name))
         );
+        setSortConfig({ 
+          direction: 'ascending', 
+          key: 'name'
+        });
         Swal.fire('Excluído!', 'A liderança foi excluída com sucesso.', 'success');
       } else {
         Swal.close();
@@ -179,6 +203,29 @@ export default function Home() {
       }
     }
   };
+
+  const requestSort = (key) => {
+    setSortConfig({
+      direction: sortConfig.direction  === 'ascending' ? 'descending' : 'ascending',
+      key
+    })
+  };
+
+  const sortedData = useMemo(() => {
+    let sortableItems = leaders;
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [leaders, sortConfig]);
 
   return (
     <div className={styles.page}>
@@ -202,19 +249,27 @@ export default function Home() {
           {leaders.length > 0 && 
             <> 
               <h4>Total de Votos Geral: {totalVotosGeral}</h4>
-              <h5>Total: {((totalVotosGeral*50)+((totalVotosGeral-leaders.filter((leader) => leader.totalVotes > 0).length)*10))}</h5>
+              <h5>Total: {totalGeral}</h5>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th>Liderança</th>
-                    <th style={{textAlign: 'center'}}>Total de Votos</th>
-                    <th style={{textAlign: 'center'}}>Total Liderança</th>
-                    <th style={{textAlign: 'center'}}>Total</th>
+                    <th>
+                      Liderança <span onClick={() => requestSort('name')} style={{cursor: 'pointer'}}>{sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
+                    </th>
+                    <th style={{textAlign: 'center'}}>
+                      Total de Votos <span onClick={() => requestSort('totalVotes')} style={{cursor: 'pointer'}}>{sortConfig.key === 'totalVotes' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
+                    </th>
+                    <th style={{textAlign: 'center'}}>
+                      Total Liderança  <span onClick={() => requestSort('totalLeader')} style={{cursor: 'pointer'}}>{sortConfig.key === 'totalLeader' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
+                    </th>
+                    <th style={{textAlign: 'center'}}>
+                      Total <span onClick={() => requestSort('total')} style={{cursor: 'pointer'}}>{sortConfig.key === 'total' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : '-'}</span>
+                    </th>
                     <th style={{textAlign: 'center'}}>Ação</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {leaders.map((leader) => (
+                  {sortedData.map((leader) => (
                     <tr key={leader._id}>
                       <td> 
                         <Link href={`/indications/${leader._id}`} className={styles.link}>
@@ -222,8 +277,8 @@ export default function Home() {
                         </Link>
                       </td>
                       <td style={{textAlign: 'center'}}>{leader.totalVotes}</td>
-                      <td style={{textAlign: 'center'}}>{leader.totalVotes > 0 ? (50+((leader.totalVotes-1)*10)) : 0}</td>
-                      <td style={{textAlign: 'center'}}>{leader.totalVotes > 0 ? ((leader.totalVotes*50)+((leader.totalVotes-1)*10)) : 0}</td>
+                      <td style={{textAlign: 'center'}}>{leader.totalLeader}</td>
+                      <td style={{textAlign: 'center'}}>{leader.total}</td>
                       <td style={{textAlign: 'center'}}>
                         <button
                           onClick={() => openModal(leader)} // Abre modal com o líder a ser editado
