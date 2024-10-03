@@ -22,6 +22,7 @@ const IndicationPage = () => {
   const [electoralZone, setElectoralZone] = useState("");
   const [electoralSection, setElectoralSection] = useState("");
   const [electoralLocation, setElectoralLocation] = useState("");
+  const [ownerLeader, setOwnerLeader] = useState(false);
 
   const [selectedIndication, setSelectedIndication] = useState(null);
 
@@ -98,6 +99,7 @@ const IndicationPage = () => {
       setElectoralZone(indication.electoralZone);
       setElectoralSection(indication.electoralSection);
       setElectoralLocation(indication.electoralLocation);
+      setOwnerLeader(indication.ownerLeader);
     }
     setIsModalOpen(true);
   };
@@ -120,6 +122,7 @@ const IndicationPage = () => {
         electoralZone: newIndication.electoralZone.value,
         electoralSection: newIndication.electoralSection.value,
         electoralLocation: newIndication.electoralLocation.value,
+        ownerLeader: ownerLeader,
         leaderId: id
       }
   
@@ -151,7 +154,8 @@ const IndicationPage = () => {
                   electoralCard: indicationData.electoralCard,
                   electoralZone: indicationData.electoralZone,
                   electoralSection: indicationData.electoralSection,
-                  electoralLocation: indicationData.electoralLocation
+                  electoralLocation: indicationData.electoralLocation,
+                  ownerLeader: indicationData.ownerLeader
                 }
                 : indication
             )
@@ -190,7 +194,8 @@ const IndicationPage = () => {
               electoralCard: data.electoralCard,
               electoralZone: data.electoralZone,
               electoralSection: data.electoralSection,
-              electoralLocation: data.electoralLocation
+              electoralLocation: data.electoralLocation,
+              ownerLeader: data.ownerLeader
             }]
             .sort((a, b) => a.name.localeCompare(b.name))
           );
@@ -233,11 +238,11 @@ const IndicationPage = () => {
       });
   
       if (res.ok) {
-        setIndications((prev) => setIndications((prev) => 
+        setIndications((prev) => 
           prev
-            .filter((indication) => indication._id !== indicationId)
+            ?.filter((indication) => indication._id !== indicationId)
             .sort((a, b) => a.name.localeCompare(b.name))
-        ));
+        );
         setTotalVotes(totalVotes - 1);
         Swal.fire('Excluído!', 'A indicação foi excluída com sucesso.', 'success');
       } else {
@@ -256,6 +261,7 @@ const IndicationPage = () => {
     setElectoralZone('');
     setElectoralSection('');
     setElectoralLocation('');
+    setOwnerLeader(false);
   }
 
   const formatElectoralCard = (card) => {
@@ -298,7 +304,7 @@ const IndicationPage = () => {
           </button >
           <br/>
           <br/>
-          {indications.length > 0 && 
+          {indications?.length > 0 && 
             <> 
               <h4>Total de Votos Geral: {totalVotes}</h4>
               <table className={styles.table}>
@@ -315,7 +321,7 @@ const IndicationPage = () => {
                 </thead>
                 <tbody>
                   {indications.map((indication) => (
-                    <tr key={indication._id}>
+                    <tr key={indication._id} style={{backgroundColor: indication.ownerLeader ? 'darkblue': ''}}>
                       <td>{indication.name}</td>
                       <td style={{textAlign: 'left'}}>{formatPhone(indication.contact)}</td>
                       <td style={{textAlign: 'center'}}>{formatElectoralCard(indication.electoralCard)}</td>
@@ -343,7 +349,7 @@ const IndicationPage = () => {
               </table>
             </>
           }
-          {indications.length === 0 && 
+          {indications?.length === 0 && 
             <>
             <strong><u>Nenhuma indicação cadastrada</u></strong>
             </>
@@ -393,6 +399,28 @@ const IndicationPage = () => {
                   onChange={(e) => setElectoralLocation(e.target.value)}
                   required
                 />
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'row-reverse',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexWrap: 'nowrap'
+                }}>
+                  <div>
+                    <span>Liderança</span>
+                  </div>
+                  <div>
+                    <input
+                      type="checkbox"
+                      id="ownerLeader"
+                      name="ownerLeader"
+                      checked={ownerLeader}
+                      onChange={(e) => setOwnerLeader(e.target.checked)}
+                      style={{ marginRight: '8px' }}
+                      disabled={!ownerLeader && indications.some((i) => i.ownerLeader)}
+                    />
+                  </div>
+                </div>
                 <div className={styles.modalActions}>
                   <button
                     type="submit"

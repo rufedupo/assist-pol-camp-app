@@ -31,7 +31,11 @@ const indicationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Leader", 
     equired: true 
-  }
+  },
+  ownerLeader: {
+    type: Boolean,
+    required: false,
+  },
 }, {
   timestamps: true, // Para criar campos createdAt e updatedAt automaticamente
 });

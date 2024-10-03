@@ -17,7 +17,8 @@ export async function PUT(req, { params }) {
       electoralCard,
       electoralZone,
       electoralSection,
-      electoralLocation
+      electoralLocation,
+      ownerLeader
     } = await req.json();
 
     if (!name) {
@@ -56,6 +57,7 @@ export async function PUT(req, { params }) {
     indication.electoralZone = electoralZone;
     indication.electoralSection = electoralSection;
     indication.electoralLocation = electoralLocation;
+    indication.ownerLeader = ownerLeader ? true : false;
 
     await indication.save();
     
