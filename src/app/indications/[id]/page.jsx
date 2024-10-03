@@ -15,6 +15,8 @@ const IndicationPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [totalVotes, setTotalVotes] = useState(0);
+  const [totalLeader, setTotalLeader] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
@@ -89,6 +91,14 @@ const IndicationPage = () => {
       });
     });
   }, [id]);
+
+  useEffect(() => {
+    const ownerCount = indications.some(i => i.ownerLeader === true) === true ? 1 : 0;
+    var totalLeader = totalVotes > 0 ? ((50*ownerCount)+(totalVotes-ownerCount)*10) : 0;
+    var total = totalLeader > 0 ? (totalLeader + (totalVotes-ownerCount)*50) : 0;
+    setTotalLeader(totalLeader)
+    setTotal(total)
+  }, [totalVotes]);
 
   const openModal = (indication = null) => {
     setSelectedIndication(indication);
@@ -306,7 +316,11 @@ const IndicationPage = () => {
           <br/>
           {indications?.length > 0 && 
             <> 
-              <h4>Total de Votos Geral: {totalVotes}</h4>
+              <div style={{display: 'flex', gap: '10px'}}>
+                <h4>Total de Votos Geral: {totalVotes}</h4>
+                <h4>Total para Liderança: {totalLeader}</h4>
+                <h4>Total para Geral: {total}</h4>
+              </div>
               <table className={styles.table}>
                 <thead>
                   <tr>

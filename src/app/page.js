@@ -21,10 +21,13 @@ export default function Home() {
     const res = await fetch(`/api/leaders?name=${query}`);
     const data = await res.json();
     const leaders = data.map((l) => {
+      var ownerCount = l.hasOwnerLeader ? 1 : 0;
+      var totalLeader = l.totalVotes > 0 ? ((50*ownerCount)+((l.totalVotes-ownerCount)*10)) : 0;
+      var total = totalLeader > 0 ? (totalLeader + (l.totalVotes-ownerCount)*50) : 0;
       return {
         ...l,
-        totalLeader: l.totalVotes > 0 ? (50+((l.totalVotes-1)*10)) : 0,
-        total: l.totalVotes > 0 ? ((l.totalVotes*50)+((l.totalVotes-1)*10)) : 0
+        totalLeader,
+        total
       }
     })
     setLeaders(leaders);
@@ -134,7 +137,9 @@ export default function Home() {
             [...prev, {
               _id: data._id,
               name: data.name,
-              totalVotes: 0
+              totalVotes: 0,
+              totalLeader: 0,
+              total: 0
             }]
             .sort((a, b) => a.name.localeCompare(b.name))
           );

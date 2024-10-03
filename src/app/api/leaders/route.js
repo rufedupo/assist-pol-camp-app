@@ -22,13 +22,23 @@ export async function GET(req) {
       },
       {
         $addFields: {
-          totalVotes: { $size: "$indications" }, // Calcula o total de votos
+          totalVotes: { $size: "$indications" },
+          hasOwnerLeader: {
+            $anyElementTrue: {
+              $map: {
+                input: "$indications",
+                as: "indication",
+                in: { $eq: ["$$indication.ownerLeader", true] }, // Check if 'ownerLeader' is true
+              },
+            },
+          },
         },
       },
       {
         $project: {
           name: 1, // Inclui o nome do líder
           totalVotes: 1, // Inclui o total de votos
+          hasOwnerLeader: 1
         },
       },
       {
