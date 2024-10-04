@@ -253,6 +253,7 @@ export default function Home() {
           <br/>
           {leaders.length > 0 && 
             <> 
+              <h4>Total de Lideranças: {leaders?.length}</h4>
               <h4>Total de Votos Geral: {totalVotosGeral}</h4>
               <h5>Total: {totalGeral}</h5>
               <table className={styles.table}>
